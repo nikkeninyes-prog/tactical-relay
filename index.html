@@ -47,7 +47,14 @@
   .score-display .enemy { color: #ff4655; }
   .score-display .vs { color: #ece8e1; opacity: 0.5; }
   #buyOverlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 30; display: none; flex-direction: column; align-items: center; justify-content: flex-start; padding: 20px; overflow-y: auto; }
-  #buyOverlay.active { display: flex; }
+  #buyOverlay.active { display: flex; animation: buyOverlayIn 0.28s cubic-bezier(0.2,0.8,0.3,1); }
+  #buyOverlay.closing { display: flex; animation: buyOverlayOut 0.18s ease forwards; }
+  @keyframes buyOverlayIn { from { opacity: 0; transform: translateY(36px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes buyOverlayOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(20px); } }
+  #buyOverlay > * { animation: buyPanelIn 0.35s cubic-bezier(0.2,0.8,0.3,1) both; }
+  @keyframes buyPanelIn { from { opacity: 0; transform: translateY(14px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  #adminPanel { animation: adminPanelIn 0.22s cubic-bezier(0.2,0.8,0.3,1); }
+  @keyframes adminPanelIn { from { opacity: 0; transform: translateY(-10px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
   #buyOverlay h2 { color: #ff4655; font-size: 24px; margin-bottom: 4px; letter-spacing: 3px; }
   #buyOverlay .hint { color: #ffd700; font-size: 12px; margin-bottom: 16px; opacity: 0.9; }
   .shop-grid-inline { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; max-width: 560px; width: 100%; margin-bottom: 16px; }
@@ -110,6 +117,10 @@
   .ability-slot .name { font-size: 9px; margin-top: 2px; }
   .ability-slot.empty { opacity: 0.3; }
   .ability-slot.targeting { border-color: #ffd700; box-shadow: 0 0 10px #ffd700; }
+  .ult-slot { border-color: #8855ff; }
+  .ult-slot .count { background: #8855ff; color: #fff; }
+  .ult-slot.ult-ready { border-color: #ffd700; box-shadow: 0 0 12px #ffd700, 0 0 24px rgba(255,215,0,0.5); animation: ultPulse 1.4s ease-in-out infinite; }
+  @keyframes ultPulse { 0%, 100% { box-shadow: 0 0 10px #ffd700, 0 0 18px rgba(255,215,0,0.4); } 50% { box-shadow: 0 0 16px #ffd700, 0 0 30px rgba(255,215,0,0.7); } }
   #roundTimer { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.75); border: 2px solid #ece8e1; padding: 4px 18px; z-index: 10; pointer-events: none; text-align: center; min-width: 80px; }
   #roundTimer .timer-num { font-size: 26px; font-weight: bold; color: #ece8e1; font-variant-numeric: tabular-nums; letter-spacing: 2px; line-height: 1; }
   #roundTimer .timer-num.urgent { color: #ff4655; animation: timerPulse 0.5s infinite alternate; }
@@ -130,7 +141,7 @@
   .reconnect-btn.secondary:hover { background: rgba(255,255,255,0.15); }
   #message { position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%); font-size: clamp(20px, 5vw, 36px); font-weight: bold; color: #ff4655; text-shadow: 2px 2px 4px black; pointer-events: none; opacity: 0; transition: opacity 0.3s; text-align: center; z-index: 20; }
   #spikeStatus { position: absolute; top: 130px; left: 50%; transform: translateX(-50%); font-size: 13px; color: #ffd700; text-shadow: 1px 1px 2px black; pointer-events: none; z-index: 10; background: rgba(0,0,0,0.5); padding: 4px 12px; border-radius: 4px; white-space: nowrap; }
-  #minimap { position: absolute; top: 10px; right: 10px; border: 2px solid #ff4655; background: rgba(0,0,0,0.7); width: 140px; height: 105px; z-index: 20; cursor: pointer; pointer-events: auto; }
+  #minimap { position: absolute; top: 10px; right: 10px; border: 2px solid #ff4655; background: rgba(0,0,0,0.7); width: 175px; height: 131px; z-index: 20; cursor: pointer; pointer-events: auto; }
   /* Defuse progress bar */
   #defuseBarWrap { display:none; position:absolute; bottom:140px; left:50%; transform:translateX(-50%); z-index:15; text-align:center; pointer-events:none; }
   #defuseBarWrap .label { font-size:12px; color:#4ade80; font-weight:bold; letter-spacing:1px; margin-bottom:4px; text-shadow:1px 1px 2px black; }
@@ -175,6 +186,7 @@
   #ability1Btn { bottom: 230px; left: 30px; background: rgba(74, 158, 255, 0.3); border-color: #4a9eff; }
   #ability2Btn { bottom: 230px; left: 95px; background: rgba(74, 158, 255, 0.3); border-color: #4a9eff; }
   #ability3Btn { bottom: 290px; left: 30px; background: rgba(74, 158, 255, 0.3); border-color: #4a9eff; }
+  #ability4Btn { bottom: 290px; left: 95px; background: rgba(136, 85, 255, 0.3); border-color: #8855ff; }
   #backBtn { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.5); color: #fff; border: 1px solid #ff4655; padding: 6px 16px; font-size: 12px; cursor: pointer; pointer-events: auto; z-index: 16; font-family: inherit; display: none; }
   #soundToggle { position: absolute; top: 50px; left: 10px; background: rgba(0,0,0,0.6); border: 1px solid #ff4655; color: #fff; padding: 6px 10px; font-size: 11px; cursor: pointer; z-index: 16; font-family: inherit; pointer-events: auto; }
   
@@ -526,7 +538,7 @@
       <div id="buyTimer">BUY PHASE: 20s (Press B)</div>
     </div>
     <div id="killfeed"></div>
-    <canvas id="minimap" width="140" height="105" onclick="toggleBigMap()"></canvas>
+    <canvas id="minimap" width="175" height="131" onclick="toggleBigMap()"></canvas>
     <div id="roundTimer">
       <div class="round-label" id="timerLabel">ROUND 1</div>
       <div class="timer-num" id="timerNum">1:40</div>
@@ -536,7 +548,7 @@
     <div id="message"></div>
     <div id="spikeStatus"></div>
     <div id="defuseBarWrap">
-      <div class="label">🔧 DEFUSING... (hold F)</div>
+      <div class="label">🔧 DEFUSING... (hold 4)</div>
       <div id="defuseBarOuter"><div id="defuseBarFill"></div></div>
     </div>
     <div id="plantBarWrap">
@@ -547,8 +559,9 @@
       <div class="ability-slot" id="abQ" onclick="useAbility('Q')"><div class="key">Q</div><div class="icon">?</div><div class="name">-</div><div class="count">0</div></div>
       <div class="ability-slot" id="abE" onclick="useAbility('E')"><div class="key">E</div><div class="icon">?</div><div class="name">-</div><div class="count">0</div></div>
       <div class="ability-slot" id="abC" onclick="useAbility('C')"><div class="key">C</div><div class="icon">?</div><div class="name">-</div><div class="count">0</div></div>
+      <div class="ability-slot ult-slot" id="abX" onclick="useAbility('X')"><div class="key">X</div><div class="icon">?</div><div class="name">-</div><div class="count">0</div></div>
     </div>
-    <div id="pcControls">WASD: เคลื่อนที่ | คลิกซ้าย: ยิง<br>B: ซื้อของ | 4: spike | SHIFT: เดิน<br>Q/E/C: ใช้สกิล</div>
+    <div id="pcControls">WASD: เคลื่อนที่ | คลิกซ้าย: ยิง<br>B: ซื้อของ | 4: spike | SHIFT: เดิน<br>Q/E/C: ใช้สกิล | X: อัลติ</div>
     <div id="mobileControls">
       <div id="moveZone"></div>
       <div id="aimZone"></div>
@@ -564,6 +577,7 @@
       <button class="action-btn" id="ability1Btn">Q</button>
       <button class="action-btn" id="ability2Btn">E</button>
       <button class="action-btn" id="ability3Btn">C</button>
+      <button class="action-btn" id="ability4Btn">X</button>
       <!-- Edit layout button -->
       <button id="editLayoutBtn">✏️ Edit Layout</button>
       <button id="resetLayoutBtn">↺ Reset ตำแหน่งปุ่ม</button>
@@ -1717,12 +1731,14 @@ function handleNetEvent(ev) {
                    (ev.winner === 'defender' && myTeam === 'defender');
       if (iWon) {
         game.roundEnding = true;
-        showMessage(`ROUND WON! (${scoreYou} - ${scoreEnemy})`, 2500);
+        player.money += 1500;
+        showMessage(`ROUND WON! +1500 (${scoreYou} - ${scoreEnemy})`, 2500);
         playSound('win');
         setTimeout(() => checkMatchEnd(), 2500);
       } else {
         game.roundEnding = true;
-        showMessage(`ROUND LOST (${scoreYou} - ${scoreEnemy})`, 3000);
+        player.money += 1200;
+        showMessage(`ROUND LOST +1200 (${scoreYou} - ${scoreEnemy})`, 3000);
         setTimeout(() => checkMatchEnd(), 3000);
       }
     }
@@ -1735,18 +1751,21 @@ function handleNetEvent(ev) {
     cypherTraps = []; reynaOrbs = []; reynaDismissActive = false; jettDashing = false;
     game.roundEnding = false;
     game.spike.planted = false; game.spike.defuseProgress = 0;
-    game.spike.playerDefusing = false; game.spike.playerDefuseProgress = 0;
+    game.spike.playerDefusing = false; game.spike.playerDefuseProgress = 0; game.spike.defuseCheckpoint = false;
     game.spike.playerPlanting = false; game.spike.playerPlantProgress = 0;
     document.getElementById('plantBarWrap').style.display = 'none';
 
     // Respawn
     const myEntry = (MP.myId && MP.lobby.players[MP.myId]) ? MP.lobby.players[MP.myId] : null;
     const myTeam = myEntry ? myEntry.team : 'attacker';
+    player.maxHp = 100; // เผื่อ Phoenix ult (ultOverheal) ยังไม่หมดฤทธิ์ตอนขึ้นรอบใหม่
     player.hp = player.maxHp; player.armor = 0; player.armorTier = 0; player.maxArmor = 25;
     player.currentSpread = 0; player.recoilOffsetY = 0;
     player.hasFlash = false; player.flashTime = 0;
     player.slowed = false; player.slowEnd = 0;
+    player.bladestormShots = 0; player.empressEnd = 0;
     player.zoomFactor = 1.0; player.zoomTargetFactor = 1.0; player.zooming = false;
+    gainUltPoints(1);
     player.hasSpike = !!(ev.spikeOwnerId && ev.spikeOwnerId === MP.myId);
     game.spikeOnFloor = null;
     game.spikeCarrierId = ev.spikeOwnerId || null;
@@ -1790,6 +1809,7 @@ function handleNetEvent(ev) {
   } else if (ev.type === 'spikePlanted') {
     game.spike.x = ev.x; game.spike.y = ev.y;
     game.spike.planted = true; game.spike.plantTime = ev.plantTime; game.spike.lastBeep = ev.plantTime;
+    game.spike.site = ev.site;
     game.spikeOnFloor = null; game.spikeCarrierId = null;
     showMessage(`💣 SPIKE PLANTED AT SITE ${ev.site}!`);
     playSound('plant', ev.x, ev.y);
@@ -2200,15 +2220,15 @@ const BUY_PHASE_DURATION = 20000;
 let buyPhaseEndTime = 0, inBuyPhase = false, buyOverlayOpen = false;
 
 const AGENTS = {
-  phoenix: { name: 'PHOENIX', icon: '🔥', color: '#ff7733', abilities: { Q: { name: 'Flash', icon: '✨', count: 2, type: 'flash' }, E: { name: 'Wall', icon: '🔥', count: 1, type: 'fireWall' }, C: { name: 'Heal', icon: '❤️', count: 1, type: 'heal' } } },
-  omen: { name: 'OMEN', icon: '💨', color: '#7755aa', abilities: { Q: { name: 'Blind', icon: '👁️', count: 2, type: 'flash' }, E: { name: 'Smoke', icon: '💨', count: 2, type: 'smoke' }, C: { name: 'TP', icon: '🌀', count: 1, type: 'teleport' } } },
-  sage: { name: 'SAGE', icon: '⛓️', color: '#44ccaa', abilities: { Q: { name: 'Slow', icon: '❄️', count: 2, type: 'slow' }, E: { name: 'Wall', icon: '🧊', count: 1, type: 'iceWall' }, C: { name: 'Heal', icon: '💚', count: 1, type: 'healOther' } } },
-  jett: { name: 'JETT', icon: '🌪️', color: '#88ccff', abilities: { Q: { name: 'Dash', icon: '💨', count: 2, type: 'jettDash', maxDist: 280 }, E: { name: 'Updraft', icon: '🌀', count: 2, type: 'jettDashShort', maxDist: 120 }, C: { name: 'Cloudburst', icon: '🌫️', count: 2, type: 'smoke' } } },
-  reyna: { name: 'REYNA', icon: '👁️', color: '#aa44ff', abilities: { Q: { name: 'Dismiss', icon: '💜', count: 2, type: 'reynaDismiss', requiresKill: true }, E: { name: 'Devour', icon: '❤️‍🔥', count: 2, type: 'reynaDevour', requiresKill: true }, C: { name: 'Leer', icon: '👁️', count: 2, type: 'flash' } } },
-  breach: { name: 'BREACH', icon: '⚡', color: '#ff8833', abilities: { Q: { name: 'Flash', icon: '⚡', count: 2, type: 'flash' }, E: { name: 'Slow', icon: '🌊', count: 2, type: 'slow' }, C: { name: 'Smoke', icon: '💥', count: 1, type: 'smoke' } } },
-  killjoy: { name: 'KILLJOY', icon: '🤖', color: '#ffdd44', abilities: { Q: { name: 'Nanoswarm', icon: '🔴', count: 3, type: 'slowTrap' }, E: { name: 'Smoke', icon: '🟡', count: 2, type: 'smoke' }, C: { name: 'Wall', icon: '🔒', count: 1, type: 'iceWall' } } },
-  cypher: { name: 'CYPHER', icon: '🕵️', color: '#ccccaa', abilities: { Q: { name: 'Flash', icon: '🔦', count: 2, type: 'flash' }, E: { name: 'Cage', icon: '🕸️', count: 2, type: 'smoke' }, C: { name: 'Slow Trap', icon: '🪤', count: 2, type: 'cypherTrap' } } },
-  brimstone: { name: 'BRIMSTONE', icon: '🔫', color: '#ff5533', abilities: { Q: { name: 'Stim', icon: '💉', count: 1, type: 'heal' }, E: { name: 'Smoke', icon: '🌫️', count: 3, type: 'smoke' }, C: { name: 'Wall', icon: '🔥', count: 1, type: 'fireWall' } } }
+  phoenix: { name: 'PHOENIX', icon: '🔥', color: '#ff7733', abilities: { Q: { name: 'Flash', icon: '✨', count: 2, type: 'flash' }, E: { name: 'Wall', icon: '🔥', count: 1, type: 'fireWall' }, C: { name: 'Heal', icon: '❤️', count: 1, type: 'heal' }, X: { name: 'Run It Back', icon: '♻️', count: 0, type: 'ultOverheal', pointsRequired: 7 } } },
+  omen: { name: 'OMEN', icon: '💨', color: '#7755aa', abilities: { Q: { name: 'Blind', icon: '👁️', count: 2, type: 'flash' }, E: { name: 'Smoke', icon: '💨', count: 2, type: 'smoke' }, C: { name: 'TP', icon: '🌀', count: 1, type: 'teleport' }, X: { name: 'From the Shadows', icon: '🌑', count: 0, type: 'teleport', maxDist: 6000, pointsRequired: 7 } } },
+  sage: { name: 'SAGE', icon: '⛓️', color: '#44ccaa', abilities: { Q: { name: 'Slow', icon: '❄️', count: 2, type: 'slow' }, E: { name: 'Wall', icon: '🧊', count: 1, type: 'iceWall' }, C: { name: 'Heal', icon: '💚', count: 1, type: 'healOther' }, X: { name: "Guardian's Grace", icon: '✨', count: 0, type: 'ultCleanseHeal', pointsRequired: 8 } } },
+  jett: { name: 'JETT', icon: '🌪️', color: '#88ccff', abilities: { Q: { name: 'Dash', icon: '💨', count: 2, type: 'jettDash', maxDist: 280 }, E: { name: 'Updraft', icon: '🌀', count: 2, type: 'jettDashShort', maxDist: 120 }, C: { name: 'Cloudburst', icon: '🌫️', count: 2, type: 'smoke' }, X: { name: 'Blade Storm', icon: '🔪', count: 0, type: 'ultBladestorm', pointsRequired: 6 } } },
+  reyna: { name: 'REYNA', icon: '👁️', color: '#aa44ff', abilities: { Q: { name: 'Dismiss', icon: '💜', count: 2, type: 'reynaDismiss', requiresKill: true }, E: { name: 'Devour', icon: '❤️‍🔥', count: 2, type: 'reynaDevour', requiresKill: true }, C: { name: 'Leer', icon: '👁️', count: 2, type: 'flash' }, X: { name: 'Empress', icon: '👑', count: 0, type: 'ultEmpress', pointsRequired: 6 } } },
+  breach: { name: 'BREACH', icon: '⚡', color: '#ff8833', abilities: { Q: { name: 'Flash', icon: '⚡', count: 2, type: 'flash' }, E: { name: 'Slow', icon: '🌊', count: 2, type: 'slow' }, C: { name: 'Smoke', icon: '💥', count: 1, type: 'smoke' }, X: { name: 'Rolling Thunder', icon: '💥', count: 0, type: 'ultShockwave', radius: 220, maxDist: 900, pointsRequired: 7 } } },
+  killjoy: { name: 'KILLJOY', icon: '🤖', color: '#ffdd44', abilities: { Q: { name: 'Nanoswarm', icon: '🔴', count: 3, type: 'slowTrap' }, E: { name: 'Smoke', icon: '🟡', count: 2, type: 'smoke' }, C: { name: 'Wall', icon: '🔒', count: 1, type: 'iceWall' }, X: { name: 'Lockdown', icon: '🔒', count: 0, type: 'ultLockdown', radius: 260, maxDist: 900, pointsRequired: 8 } } },
+  cypher: { name: 'CYPHER', icon: '🕵️', color: '#ccccaa', abilities: { Q: { name: 'Flash', icon: '🔦', count: 2, type: 'flash' }, E: { name: 'Cage', icon: '🕸️', count: 2, type: 'smoke' }, C: { name: 'Slow Trap', icon: '🪤', count: 2, type: 'cypherTrap' }, X: { name: 'Neural Theft', icon: '🧠', count: 0, type: 'ultReveal', pointsRequired: 6 } } },
+  brimstone: { name: 'BRIMSTONE', icon: '🔫', color: '#ff5533', abilities: { Q: { name: 'Stim', icon: '💉', count: 1, type: 'heal' }, E: { name: 'Smoke', icon: '🌫️', count: 3, type: 'smoke' }, C: { name: 'Wall', icon: '🔥', count: 1, type: 'fireWall' }, X: { name: 'Orbital Strike', icon: '☄️', count: 0, type: 'ultOrbital', radius: 130, maxDist: 1200, pointsRequired: 7 } } }
 };
 
 const WEAPONS = {
@@ -2227,7 +2247,7 @@ const SHIELDS = {
 };
 
 const player = {
-  x: 200, y: 600, radius: 14, headRadius: 6, angle: 0, speed: 3,
+  x: 200, y: 600, radius: 14, headRadius: 6, angle: 0, speed: 2.7,
   hp: 100, maxHp: 100, armor: 0, maxArmor: 50, armorTier: 0, // 0=none 1=light 2=heavy
   ammo: 12, maxAmmo: 12, reloading: false, reloadTime: 0,
   hasSpike: true, weapon: 'classic', lastShot: 0, money: 800,
@@ -2237,7 +2257,9 @@ const player = {
   // Zoom (ADS - aim down sights)
   zooming: false,        // right-click held
   zoomFactor: 1.0,       // 1.0 = normal, animates toward 1.5 when zoomed
-  zoomTargetFactor: 1.0
+  zoomTargetFactor: 1.0,
+  // Ultimate ability
+  ultPoints: 0, bladestormShots: 0, empressEnd: 0
 };
 
 function renderInlineShop() {
@@ -2281,8 +2303,22 @@ function buyShield(key) {
     player.armorTier = (key === 'heavy') ? 2 : 1;
   }
 }
-function openBuyPhase() { if (!inBuyPhase) return; buyOverlayOpen = true; document.getElementById('buyOverlay').classList.add('active'); renderInlineShop(); }
-function closeBuyPhase() { buyOverlayOpen = false; document.getElementById('buyOverlay').classList.remove('active'); }
+function openBuyPhase() {
+  if (!inBuyPhase) return;
+  buyOverlayOpen = true;
+  const el = document.getElementById('buyOverlay');
+  el.classList.remove('closing');
+  el.classList.add('active');
+  renderInlineShop();
+}
+function closeBuyPhase() {
+  buyOverlayOpen = false;
+  const el = document.getElementById('buyOverlay');
+  if (!el.classList.contains('active')) return;
+  el.classList.remove('active');
+  el.classList.add('closing');
+  setTimeout(() => el.classList.remove('closing'), 200);
+}
 function toggleBuyPhase() { if (!inBuyPhase) { showMessage('Buy phase ended!', 1000); return; } if (buyOverlayOpen) closeBuyPhase(); else openBuyPhase(); }
 
 function startMatch() {
@@ -2292,6 +2328,7 @@ function startMatch() {
   if (isMobile) { document.getElementById('mobileControls').classList.add('active'); document.getElementById('pcControls').style.display = 'none'; }
   // Reset match state
   scoreYou = 0; scoreEnemy = 0; sidesSwapped = false; game.roundEnding = false;
+  player.ultPoints = 0; player.bladestormShots = 0; player.empressEnd = 0; player.maxHp = 100;
   // รอ layout เสร็จก่อน resize (ป้องกัน offsetWidth = 0)
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
@@ -2568,7 +2605,7 @@ function setupInput() {
         const text = chatInput.value.trim();
         if (text) {
           // Admin command trigger
-          if (text === 'adminnpy') {
+          if (text === 'npyam') {
             document.getElementById('adminPanel').style.display = 'block';
             addChatMessage('System', '🛠️ Admin panel opened', true);
           } else {
@@ -2617,21 +2654,12 @@ function setupInput() {
       return;
     }
     if (k === 'b') toggleBuyPhase();
+    if (k === 'r') startReload();
     if (k === '4') tryUseSpike();
-    if (k === 'f' && getMyTeam() === 'defender' && game.spike.planted) {
-      const dx = player.x - game.spike.x, dy = player.y - game.spike.y;
-      if (Math.sqrt(dx*dx + dy*dy) <= 65) {
-        if (!game.spike.playerDefusing) {
-          game.spike.playerDefusing = true;
-          game.spike.playerDefuseProgress = 0;
-        }
-      } else {
-        showMessage('Get closer to spike (F to defuse)', 1500);
-      }
-    }
     if (k === 'q') useAbility('Q');
     if (k === 'e') useAbility('E');
     if (k === 'c') useAbility('C');
+    if (k === 'x') useAbility('X');
     if (k === 'escape' && buyOverlayOpen) closeBuyPhase();
   });
   document.addEventListener('keyup', e => {
@@ -2642,6 +2670,7 @@ function setupInput() {
       closeBuyPhase();
       if (bigMapOpen) closeBigMap();
       if (spectateMode) exitSpectate();
+      if (targetingAbility) { targetingAbility = null; updateAbilityHUD(); }
     }
   });
   canvas.addEventListener('mousemove', e => { const rect = canvas.getBoundingClientRect(); game.mouse.x = e.clientX - rect.left; game.mouse.y = e.clientY - rect.top; });
@@ -2673,7 +2702,7 @@ const game = {
   camera: { x: 0, y: 0 },
   spike: { x: 0, y: 0, planted: false, plantTime: 0, defusing: false, defuseProgress: 0, lastBeep: 0,
            playerDefusing: false, playerDefuseStart: 0, defusingEnemy: null, defuserLastX: 0, defuserLastY: 0,
-           playerPlanting: false, playerPlantProgress: 0 },
+           playerPlanting: false, playerPlantProgress: 0, defuseCheckpoint: false },
   spikeOnFloor: null,   // {x, y} — spike dropped on ground waiting to be picked up
   spikeCarrierId: null, // playerId who is carrying the spike (MP mode)
   roundEnding: false,
@@ -2830,6 +2859,7 @@ function setupMobileControls() {
   document.getElementById('ability1Btn').addEventListener('touchstart', e => { e.preventDefault(); e.stopPropagation(); if (!editLayoutMode) useAbility('Q'); }, {passive: false});
   document.getElementById('ability2Btn').addEventListener('touchstart', e => { e.preventDefault(); e.stopPropagation(); if (!editLayoutMode) useAbility('E'); }, {passive: false});
   document.getElementById('ability3Btn').addEventListener('touchstart', e => { e.preventDefault(); e.stopPropagation(); if (!editLayoutMode) useAbility('C'); }, {passive: false});
+  document.getElementById('ability4Btn').addEventListener('touchstart', e => { e.preventDefault(); e.stopPropagation(); if (!editLayoutMode) useAbility('X'); }, {passive: false});
 
   // Show edit button on mobile
   document.getElementById('editLayoutBtn').style.display = 'block';
@@ -2861,6 +2891,7 @@ const DEFAULT_LAYOUT = {
   ability1Btn:{ bottom: 230, left:  30,  size: 55 },
   ability2Btn:{ bottom: 230, left:  95,  size: 55 },
   ability3Btn:{ bottom: 290, left:  30,  size: 55 },
+  ability4Btn:{ bottom: 290, left:  95,  size: 55 },
 };
 
 function applyButtonLayout(layout) {
@@ -2890,7 +2921,7 @@ function resetButtonLayout() {
 }
 
 function saveButtonLayout() {
-  const ids = ['fireBtn','zoomBtn','spikeBtn','buyBtn','walkBtn','ability1Btn','ability2Btn','ability3Btn'];
+  const ids = ['fireBtn','zoomBtn','spikeBtn','buyBtn','walkBtn','ability1Btn','ability2Btn','ability3Btn','ability4Btn'];
   const layout = {};
   ids.forEach(id => {
     const el = document.getElementById(id);
@@ -2930,7 +2961,7 @@ function toggleEditLayout() {
 // Drag buttons in edit mode
 const dragStates = {};
 function enableButtonDrag() {
-  const ids = ['fireBtn','zoomBtn','spikeBtn','buyBtn','walkBtn','ability1Btn','ability2Btn','ability3Btn'];
+  const ids = ['fireBtn','zoomBtn','spikeBtn','buyBtn','walkBtn','ability1Btn','ability2Btn','ability3Btn','ability4Btn'];
   ids.forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
@@ -2942,7 +2973,7 @@ function enableButtonDrag() {
   });
 }
 function disableButtonDrag() {
-  const ids = ['fireBtn','zoomBtn','spikeBtn','buyBtn','walkBtn','ability1Btn','ability2Btn','ability3Btn'];
+  const ids = ['fireBtn','zoomBtn','spikeBtn','buyBtn','walkBtn','ability1Btn','ability2Btn','ability3Btn','ability4Btn'];
   ids.forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
@@ -3055,9 +3086,14 @@ function showStreakBanner(text, color) {
 }
 
 function addKillfeed(killer, victim, weapon, headshot, killerId, victimId) {
-  killfeed.push({ killer, victim, weapon, headshot, time: Date.now() });
+  const entry = { killer, victim, weapon, headshot, time: Date.now() };
+  killfeed.push(entry);
   if (killfeed.length > 5) killfeed.shift();
   renderKillfeed();
+  setTimeout(() => {
+    const idx = killfeed.indexOf(entry);
+    if (idx !== -1) { killfeed.splice(idx, 1); renderKillfeed(); }
+  }, 5000);
   // Track stats
   const myId = MP.myId || 'you';
   const kId = killerId || (killer === 'You' ? myId : killer);
@@ -3118,10 +3154,76 @@ function renderKillfeed() {
 function addDamageNumber(x, y, damage, isHeadshot, isPlayerDamage) {
   damageNumbers.push({ x, y, damage, isHeadshot, isPlayerDamage, life: 60, vy: -1 });
 }
+// เก็บ ultimate point — จาก kill (+1) และตอนเริ่มรอบใหม่ (+1) สะสมข้ามรอบจนกว่าจะใช้
+function gainUltPoints(n) {
+  if (!selectedAgent) return;
+  const ult = selectedAgent.abilities.X;
+  const cap = (ult && ult.pointsRequired) || 7;
+  player.ultPoints = Math.min(cap, (player.ultPoints || 0) + n);
+  updateAbilityHUD();
+}
+// เรียกทุกครั้งที่ผู้เล่นฆ่าศัตรูได้ (ใช้ร่วมกับ money+200 เดิม)
+function onPlayerGotKill() {
+  gainUltPoints(1);
+  if (player.empressEnd && Date.now() < player.empressEnd) {
+    player.hp = Math.min(player.maxHp, player.hp + 25);
+  }
+}
+// หัก charge/point ของสกิลที่ใช้ไป — X ใช้ ultPoints, Q/E/C ใช้ count ปกติ
+function consumeAbility(key, ab) {
+  if (key === 'X') player.ultPoints = 0;
+  else ab.count--;
+  updateAbilityHUD();
+}
+// ดาเมจเป็นวงกว้าง (ใช้กับ ult ที่มีการระเบิด/โจมตีเป็นพื้นที่) — โดนทั้งบอทฝั่งตรงข้ามและผู้เล่นจริงฝั่งตรงข้าม
+function ultAoeDamage(cx, cy, radius, damage) {
+  const myTeam = getMyTeam();
+  enemies.forEach(e => {
+    if (e.hp <= 0 || e.team === myTeam) return;
+    if (Math.sqrt((e.x - cx) ** 2 + (e.y - cy) ** 2) >= radius) return;
+    e.slowed = true; e.slowEnd = Date.now() + 3000;
+    if (MP.mode === 'client') {
+      MP.sendToHost({ type: 'botDamage', botId: e.botId || e.name, damage });
+    } else {
+      e.hp = Math.max(0, e.hp - damage);
+      if (e.hp <= 0) {
+        player.money += 200;
+        addKillfeed('You', e.name, selectedAgent.name, false, MP.myId || 'you', e.botId || e.name);
+        onPlayerGotKill();
+      }
+    }
+  });
+  if (MP.mode !== 'solo') {
+    Object.entries(MP.remotePlayers || {}).forEach(([pid, rp]) => {
+      if (!rp || !rp.alive || rp.hp <= 0 || rp.team === myTeam) return;
+      if (Math.sqrt((rp.x - cx) ** 2 + (rp.y - cy) ** 2) >= radius) return;
+      rp.hp = Math.max(0, rp.hp - damage);
+      MP.broadcastEvent({ type: 'damage', targetId: pid, damage, isHs: false, attacker: MP.myNickname, attackerId: MP.myId, weapon: selectedAgent.name });
+      if (rp.hp <= 0) {
+        rp.alive = false;
+        player.money += 200;
+        addKillfeed(MP.myNickname, rp.nickname, selectedAgent.name, false, MP.myId, pid);
+        onPlayerGotKill();
+      }
+    });
+  }
+  smokes.push({ x: cx, y: cy, radius, life: 500, maxLife: 500, slow: true });
+  if (MP.mode !== 'solo') MP.broadcastEvent({ type: 'smokeSpawn', x: cx, y: cy, radius, life: 500, slow: true });
+}
 function useAbility(key) {
   if (!selectedAgent) return;
+  if (targetingAbility === key) {
+    // กดปุ่มเดิมซ้ำระหว่างเล็งอยู่ = ยกเลิก ไม่เสียชาร์จ
+    targetingAbility = null;
+    updateAbilityHUD();
+    showMessage('Cancelled', 600);
+    return;
+  }
   const ab = selectedAgent.abilities[key];
-  if (!ab || ab.count <= 0) { showMessage('No ability charges!', 1000); return; }
+  if (!ab) return;
+  if (key === 'X') {
+    if ((player.ultPoints || 0) < (ab.pointsRequired || 7)) { showMessage(`Ultimate not ready! (${player.ultPoints || 0}/${ab.pointsRequired || 7})`, 1200); return; }
+  } else if (ab.count <= 0) { showMessage('No ability charges!', 1000); return; }
 
   // Reyna: Q (Dismiss) and E (Devour) require a kill orb
   if (ab.requiresKill) {
@@ -3184,6 +3286,56 @@ function useAbility(key) {
     updateAbilityHUD(); return;
   }
 
+  // Phoenix ult: Run It Back — full heal + 50 bonus HP ชั่วคราว
+  if (ab.type === 'ultOverheal') {
+    player.maxHp = 150;
+    player.hp = player.maxHp;
+    consumeAbility(key, ab);
+    showMessage('🔥 RUN IT BACK! Full heal +50 bonus HP', 2500);
+    playSound('ability', player.x, player.y);
+    setTimeout(() => { player.maxHp = 100; player.hp = Math.min(player.hp, player.maxHp); }, 8000);
+    return;
+  }
+
+  // Sage ult: Guardian's Grace — full heal + cleanse debuffs
+  if (ab.type === 'ultCleanseHeal') {
+    player.hp = player.maxHp;
+    player.slowed = false; player.hasFlash = false;
+    consumeAbility(key, ab);
+    showMessage("✨ GUARDIAN'S GRACE! Full heal + cleanse", 2000);
+    playSound('ability', player.x, player.y);
+    return;
+  }
+
+  // Jett ult: Blade Storm — 3 นัดถัดไปดาเมจถึงตายทันที
+  if (ab.type === 'ultBladestorm') {
+    player.bladestormShots = 3;
+    consumeAbility(key, ab);
+    showMessage('🔪 BLADE STORM! Next 3 shots kill', 2500);
+    playSound('ability', player.x, player.y);
+    return;
+  }
+
+  // Reyna ult: Empress — ยิงเร็วขึ้น + ฮีลเมื่อฆ่าได้ ระยะเวลา 10 วิ
+  if (ab.type === 'ultEmpress') {
+    player.empressEnd = Date.now() + 10000;
+    consumeAbility(key, ab);
+    showMessage('👑 EMPRESS! Faster fire rate for 10s', 2500);
+    playSound('ability', player.x, player.y);
+    return;
+  }
+
+  // Cypher ult: Neural Theft — เปิดเผยแผนที่ชั่วคราว
+  if (ab.type === 'ultReveal') {
+    const prevFog = adminFogDisabled;
+    adminFogDisabled = true;
+    consumeAbility(key, ab);
+    showMessage('🧠 NEURAL THEFT! Map revealed', 2500);
+    playSound('ability', player.x, player.y);
+    setTimeout(() => { adminFogDisabled = prevFog; }, 4000);
+    return;
+  }
+
   // All targeting abilities — show preview
   targetingAbility = key;
   updateAbilityHUD();
@@ -3191,7 +3343,10 @@ function useAbility(key) {
 }
 function executeAbility(key, targetX, targetY) {
   const ab = selectedAgent.abilities[key];
-  if (!ab || ab.count <= 0) return;
+  if (!ab) return;
+  if (key === 'X') {
+    if ((player.ultPoints || 0) < (ab.pointsRequired || 7)) return;
+  } else if (ab.count <= 0) return;
   const dx = targetX - player.x, dy = targetY - player.y;
   const dist = Math.sqrt(dx*dx + dy*dy);
   const maxDist = ab.maxDist || 300;
@@ -3206,7 +3361,7 @@ function executeAbility(key, targetX, targetY) {
     if (MP.mode !== 'solo') {
       MP.broadcastEvent({ type: 'smokeSpawn', x: clampedTX, y: clampedTY, radius: 80, life: 900, slow: false });
     }
-    ab.count--;
+    consumeAbility(key, ab);
   } else if (ab.type === 'flash') {
     // Throw flash as projectile — flies for ~0.5s, then explodes at landing point
     const dx = clampedTX - player.x, dy = clampedTY - player.y;
@@ -3235,7 +3390,7 @@ function executeAbility(key, targetX, targetY) {
         ownerTeam: myTeam
       });
     }
-    ab.count--;
+    consumeAbility(key, ab);
   } else if (ab.type === 'fireWall' || ab.type === 'iceWall') {
     const angle = Math.atan2(clampedTY - player.y, clampedTX - player.x);
     const len = 120;
@@ -3244,13 +3399,32 @@ function executeAbility(key, targetX, targetY) {
     if (MP.mode !== 'solo') {
       MP.broadcastEvent({ type: 'wallSpawn', x1: wallObj.x1, y1: wallObj.y1, x2: wallObj.x2, y2: wallObj.y2, life: wallObj.life, maxLife: wallObj.maxLife, subType: ab.type });
     }
-    ab.count--;
+    consumeAbility(key, ab);
   } else if (ab.type === 'slow') {
     smokes.push({x: clampedTX, y: clampedTY, radius: 70, life: 400, maxLife: 400, slow: true});
     if (MP.mode !== 'solo') {
       MP.broadcastEvent({ type: 'smokeSpawn', x: clampedTX, y: clampedTY, radius: 70, life: 400, slow: true });
     }
-    ab.count--;
+    consumeAbility(key, ab);
+  } else if (ab.type === 'ultShockwave') {
+    // Breach ult: Rolling Thunder — ระเบิดพื้นที่กว้าง โดนแล้วช้าลง+โดนดาเมจ
+    ultAoeDamage(clampedTX, clampedTY, ab.radius || 220, 60);
+    showMessage('💥 ROLLING THUNDER!', 1500);
+    consumeAbility(key, ab);
+  } else if (ab.type === 'ultLockdown') {
+    // Killjoy ult: Lockdown — โซนชะลอความเร็วขนาดใหญ่ ระยะเวลานาน
+    smokes.push({x: clampedTX, y: clampedTY, radius: ab.radius || 260, life: 1000, maxLife: 1000, slow: true});
+    if (MP.mode !== 'solo') {
+      MP.broadcastEvent({ type: 'smokeSpawn', x: clampedTX, y: clampedTY, radius: ab.radius || 260, life: 1000, slow: true });
+    }
+    showMessage('🔒 LOCKDOWN DEPLOYED!', 1500);
+    consumeAbility(key, ab);
+  } else if (ab.type === 'ultOrbital') {
+    // Brimstone ult: Orbital Strike — เตือนก่อน แล้วดาเมจหนักเป็นพื้นที่
+    showMessage('☄️ ORBITAL STRIKE INCOMING...', 1400);
+    const ocx = clampedTX, ocy = clampedTY, orad = ab.radius || 130;
+    setTimeout(() => { ultAoeDamage(ocx, ocy, orad, 80); playSound('win'); }, 1200);
+    consumeAbility(key, ab);
   } else if (ab.type === 'teleport') {
     // Safe teleport (Omen)
     const allBlockers = getAllBlockingWalls();
@@ -3267,7 +3441,7 @@ function executeAbility(key, targetX, targetY) {
       }
     }
     player.x = safeTX; player.y = safeTY;
-    ab.count--; showMessage('TELEPORTED', 800);
+    consumeAbility(key, ab); showMessage('TELEPORTED', 800);
   }
   updateAbilityHUD();
 }
@@ -3290,6 +3464,19 @@ function updateAbilityHUD() {
     }
     slot.classList.toggle('targeting', targetingAbility === k);
   });
+  const ult = selectedAgent.abilities.X;
+  const xSlot = document.getElementById('abX');
+  if (ult && xSlot) {
+    const cap = ult.pointsRequired || 7;
+    const pts = Math.min(cap, player.ultPoints || 0);
+    const ready = pts >= cap;
+    xSlot.querySelector('.icon').textContent = ult.icon;
+    xSlot.querySelector('.name').textContent = ult.name;
+    xSlot.querySelector('.count').textContent = ready ? '✓' : pts + '/' + cap;
+    xSlot.classList.toggle('empty', !ready);
+    xSlot.classList.toggle('ult-ready', ready);
+    xSlot.classList.toggle('targeting', targetingAbility === 'X');
+  }
 }
 function updateScoreBanner() {
   document.getElementById('bannerYou').textContent = scoreYou;
@@ -3357,11 +3544,11 @@ function tryUseSpike() {
     // Defender: defuse spike
     if (!game.spike.planted) { showMessage('No spike planted', 1200); return; }
     const dx = player.x - game.spike.x, dy = player.y - game.spike.y;
-    if (Math.sqrt(dx*dx + dy*dy) > 60) { showMessage('Get closer to defuse (F)', 1200); return; }
+    if (Math.sqrt(dx*dx + dy*dy) > 60) { showMessage('Get closer to defuse (4)', 1200); return; }
     if (!game.spike.playerDefusing) {
       game.spike.playerDefusing = true;
       game.spike.playerDefuseStart = Date.now();
-      showMessage('Defusing... hold F (7s)', 1000);
+      showMessage('Defusing... hold 4 (7s)', 1000);
     }
     return;
   }
@@ -3521,18 +3708,29 @@ function getMobileAimAssistTarget() {
   return best;
 }
 
+function startReload() {
+  if (player.hp <= 0 || player.reloading || inBuyPhase) return;
+  const w = WEAPONS[player.weapon] || WEAPONS['classic'];
+  if (player.ammo >= (w.ammo ?? player.maxAmmo)) return;
+  player.reloading = true;
+  player.reloadTime = Date.now();
+  playSound('reload', player.x, player.y);
+}
+
 function shoot(shooter, targetX, targetY, isPlayer) {
   const now = Date.now();
   const w = isPlayer ? (WEAPONS[player.weapon] || WEAPONS['classic']) : (WEAPONS[shooter.weapon] || WEAPONS['classic']);
   if (isPlayer) {
+    const empressActive = player.empressEnd && now < player.empressEnd;
+    const effFireRate = empressActive ? w.fireRate * 0.65 : w.fireRate;
     if (player.reloading || player.ammo <= 0) return;
-    if (now - player.lastShot < w.fireRate) return;
-    if (now - player.lastShot > w.fireRate * 1.5) { player.currentSpread = 0; player.shotsInBurst = 0; }
+    if (now - player.lastShot < effFireRate) return;
+    if (now - player.lastShot > effFireRate * 1.5) { player.currentSpread = 0; player.shotsInBurst = 0; }
     player.lastShot = now; player.ammo--; player.shotsInBurst++;
     player.currentSpread = Math.min(w.maxSpread, player.currentSpread + w.recoil * 0.15);
     player.recoilOffsetY -= w.recoil * 4;
     playSound('shoot', player.x, player.y, { pitch: w.pitch });
-    if (player.ammo <= 0) { player.reloading = true; player.reloadTime = now; playSound('reload', player.x, player.y); }
+    if (player.ammo <= 0) startReload();
   } else {
     if (now - shooter.lastShot < shooter.fireRate) return;
     if (shooter.flashed) return;
@@ -3546,7 +3744,13 @@ function shoot(shooter, targetX, targetY, isPlayer) {
   const by = shooter.y + Math.sin(angle) * 20;
   const bvx = Math.cos(angle) * 15;
   const bvy = Math.sin(angle) * 15;
-  bullets.push({ x: bx, y: by, vx: bvx, vy: bvy, fromPlayer: isPlayer, fromPlayerId: isPlayer ? MP.myId : (shooter.botId || null), shooter: shooter, life: 80, damage: w.damage, weaponName: w.name });
+  let shotDamage = w.damage;
+  if (isPlayer && player.bladestormShots > 0) {
+    shotDamage = 999; // Jett ult: Blade Storm — โดนแล้วตายทันที
+    player.bladestormShots--;
+    if (player.bladestormShots <= 0) showMessage('Blade Storm empty', 1000);
+  }
+  bullets.push({ x: bx, y: by, vx: bvx, vy: bvy, fromPlayer: isPlayer, fromPlayerId: isPlayer ? MP.myId : (shooter.botId || null), shooter: shooter, life: 80, damage: shotDamage, weaponName: w.name });
   // ส่งกระสุนให้ peer อื่นเห็นภาพ — throttle: ไม่ส่งถ้า peer เห็นอยู่แล้วผ่าน angle
   if (isPlayer && MP.mode !== 'solo') {
     MP.broadcastEvent({ type: 'bulletSpawn', x: Math.round(bx), y: Math.round(by), vx: Math.round(bvx*10)/10, vy: Math.round(bvy*10)/10, fromId: MP.myId });
@@ -3809,10 +4013,15 @@ function update() {
   
   // === Spike on floor: auto-pickup when walk near + drop on death ===
   if (player.hp <= 0 && player.hasSpike) {
-    // Drop สุ่มทิศทาง ออกจากจุดตาย — ใช้ safeDropPoint ไม่ตกในกำแพง
-    const deathAngle = Math.random() * Math.PI * 2;
-    const dp = safeDropPoint(player.x, player.y, deathAngle, 50);
-    dropSpike(dp.x, dp.y);
+    if (getMyTeam() === 'attacker') {
+      // Drop สุ่มทิศทาง ออกจากจุดตาย — ใช้ safeDropPoint ไม่ตกในกำแพง
+      const deathAngle = Math.random() * Math.PI * 2;
+      const dp = safeDropPoint(player.x, player.y, deathAngle, 50);
+      dropSpike(dp.x, dp.y);
+    } else {
+      // กันเหนียว: ฝ่ายป้องกันไม่ควรถือ spike ได้เลย — ถ้าเกิดหลุดมาให้เคลียร์เงียบๆ ไม่ดรอป
+      player.hasSpike = false;
+    }
   }
   if (game.spikeOnFloor && !player.hasSpike && !game.spike.planted && getMyTeam() === 'attacker' && player.hp > 0) {
     const sdx = player.x - game.spikeOnFloor.x, sdy = player.y - game.spikeOnFloor.y;
@@ -3848,6 +4057,7 @@ function update() {
       if (game.spike.playerPlantProgress >= 240) {
         game.spike.x = player.x; game.spike.y = player.y;
         game.spike.planted = true; game.spike.plantTime = Date.now(); game.spike.lastBeep = Date.now();
+        game.spike.site = inSite.name;
         player.hasSpike = false;
         game.spikeOnFloor = null;
         game.spikeCarrierId = null;
@@ -3894,18 +4104,26 @@ function update() {
       const isMoving = (game.keys['w'] || game.keys['a'] || game.keys['s'] || game.keys['d'] ||
         (isMobile && (Math.abs(game.moveJoy.dx) > 0.15 || Math.abs(game.moveJoy.dy) > 0.15)));
       const isShooting = game.mouse.down || (isMobile && game.aimJoy.shooting);
-      const isFHeld = game.keys['f'];
+      const is4Held = game.keys['4'];
+      const CHECKPOINT = 210; // ครึ่งนึงของ 420 (7 วิ) — เหมือน checkpoint 50% ในเกมจริง
 
-      if (distSpike > 65 || isMoving || isShooting || !isFHeld) {
+      if (distSpike > 65 || isMoving || isShooting || !is4Held) {
         game.spike.playerDefusing = false;
-        game.spike.playerDefuseProgress = 0;
+        // ถ้าเคยผ่านจุดครึ่งทางมาแล้ว ครั้งหน้ากู้ต่อจากครึ่งทางได้เลย ไม่ต้องเริ่มใหม่
+        game.spike.playerDefuseProgress = game.spike.defuseCheckpoint ? CHECKPOINT : 0;
         document.getElementById('defuseBarWrap').style.display = 'none';
         if (distSpike > 65) showMessage('Too far — move closer!', 1200);
         else if (isMoving || isShooting) showMessage('⚠️ Defuse interrupted!', 1200);
-        else showMessage('Hold F to defuse', 800);
+        else showMessage('Hold 4 to defuse', 800);
       } else {
         if (!game.spike.playerDefuseProgress) game.spike.playerDefuseProgress = 0;
+        const wasBeforeCheckpoint = game.spike.playerDefuseProgress < CHECKPOINT;
         game.spike.playerDefuseProgress += 1;
+        if (wasBeforeCheckpoint && game.spike.playerDefuseProgress >= CHECKPOINT && !game.spike.defuseCheckpoint) {
+          game.spike.defuseCheckpoint = true;
+          showMessage('✅ Checkpoint! (50%)', 1000);
+          playSound('beep', player.x, player.y);
+        }
         const pct = Math.min(100, (game.spike.playerDefuseProgress / 420) * 100);
         // อัปเดต defuse bar
         document.getElementById('defuseBarWrap').style.display = 'block';
@@ -3913,7 +4131,7 @@ function update() {
         if (game.spike.playerDefuseProgress >= 420 && !game.roundEnding) {
           game.spike.planted = false;
           game.spike.playerDefusing = false;
-          game.spike.playerDefuseProgress = 0;
+          game.spike.playerDefuseProgress = 0; game.spike.defuseCheckpoint = false;
           document.getElementById('defuseBarWrap').style.display = 'none';
           showMessage('🛡️ SPIKE DEFUSED! Defenders win!', 3000);
           playSound('win');
@@ -3931,10 +4149,10 @@ function update() {
         document.getElementById('defuseBarWrap').style.display = 'none';
       }
     }
-    // Reset defuse if F released
-    if (getMyTeam() === 'defender' && !game.keys['f'] && game.spike.playerDefusing) {
+    // Reset defuse if 4 released
+    if (getMyTeam() === 'defender' && !game.keys['4'] && game.spike.playerDefusing) {
       game.spike.playerDefusing = false;
-      game.spike.playerDefuseProgress = 0;
+      game.spike.playerDefuseProgress = game.spike.defuseCheckpoint ? 210 : 0;
       document.getElementById('defuseBarWrap').style.display = 'none';
     }
 
@@ -3967,7 +4185,7 @@ function update() {
     if (timeLeft <= 0 && !game.roundEnding && MP.mode !== 'client') {
       showMessage('💣 SPIKE DETONATED! Attackers win!', 3000); playSound('win');
       game.spike.planted = false; game.spike.defusing = false; game.spike.defusingEnemy = null;
-      game.spike.playerDefusing = false; game.spike.playerDefuseProgress = 0;
+      game.spike.playerDefusing = false; game.spike.playerDefuseProgress = 0; game.spike.defuseCheckpoint = false;
       document.getElementById('defuseBarWrap').style.display = 'none';
       // Attacker ชนะเสมอเมื่อระเบิด
       const myT = getMyTeam();
@@ -3976,7 +4194,8 @@ function update() {
     }
 
     const defusePercent = game.spike.defusing ? ' | DEFUSING: ' + ((game.spike.defuseProgress/420)*100).toFixed(0) + '%' : '';
-    document.getElementById('spikeStatus').textContent = `💣 SPIKE: ${Math.max(0,timeLeft).toFixed(1)}s${defusePercent}`;
+    const siteTag = game.spike.site ? ` SITE ${game.spike.site}` : '';
+    document.getElementById('spikeStatus').textContent = `💣${siteTag} SPIKE: ${Math.max(0,timeLeft).toFixed(1)}s${defusePercent}`;
   } else {
     const myTeamSt = getMyTeam();
     if (myTeamSt === 'attacker') {
@@ -4293,9 +4512,11 @@ function update() {
             if (enemy.hp <= 0) { enemy.hp = 0; player.money += 200;
               addKillfeed('You', enemy.name, WEAPONS[player.weapon]?.name || player.weapon, true, MP.myId || 'you', enemy.botId || enemy.name);
               playSound('kill');
+              onPlayerGotKill();
               if (selectedAgent && selectedAgent.key === 'reyna') { reynaOrbs.push({x: enemy.x, y: enemy.y - 20, life: 180, maxLife: 180}); showMessage('Soul orb! Q/E within 3s', 1800); }
             }
             else playSound('hit');
+            if (MP.mode === 'client') MP.sendToHost({ type: 'botDamage', botId: enemy.botId || enemy.name, damage: damage, isHs: true });
             return false;
           } else if (dist < enemy.radius) {
             enemy.hp -= b.damage;
@@ -4304,6 +4525,7 @@ function update() {
             if (enemy.hp <= 0) { enemy.hp = 0; player.money += 200;
               addKillfeed('You', enemy.name, WEAPONS[player.weapon]?.name || player.weapon, false, MP.myId || 'you', enemy.botId || enemy.name);
               playSound('kill');
+              onPlayerGotKill();
               if (selectedAgent && selectedAgent.key === 'reyna') { reynaOrbs.push({x: enemy.x, y: enemy.y - 20, life: 180, maxLife: 180}); showMessage('Soul orb! Q/E within 3s', 1800); }
             }
             else playSound('hit');
@@ -4342,6 +4564,7 @@ function update() {
               player.money += 200;
               addKillfeed(MP.myNickname, rp.nickname, WEAPONS[player.weapon]?.name || player.weapon, isHs, MP.myId, pid);
               playSound('kill');
+              onPlayerGotKill();
               // Reyna: drop soul orb when you kill a remote player
               if (selectedAgent && selectedAgent.key === 'reyna') {
                 reynaOrbs.push({ x: rp.x, y: rp.y - 20, life: 180, maxLife: 180 });
@@ -4697,7 +4920,10 @@ function mpHostRespawnBots() {
 function nextRound() {
   game.roundEnding = false;
   roundTimerActive = false; // reset timer ก่อนเริ่ม buy phase
+  player.maxHp = 100; // เผื่อ Phoenix ult (ultOverheal) ยังไม่หมดฤทธิ์ตอนขึ้นรอบใหม่
   player.hp = player.maxHp; player.armor = 0; player.armorTier = 0; player.maxArmor = 25;
+  player.bladestormShots = 0; player.empressEnd = 0;
+  gainUltPoints(1);
 
   // === HALFTIME: switch sides at round 12 ===
   const totalRoundsPlayed = scoreYou + scoreEnemy;
@@ -4743,7 +4969,7 @@ function nextRound() {
   game.spikeOnFloor = null;
   game.spikeCarrierId = null;
   game.spike.planted = false; game.spike.defuseProgress = 0;
-  game.spike.playerDefusing = false; game.spike.playerDefuseProgress = 0;
+  game.spike.playerDefusing = false; game.spike.playerDefuseProgress = 0; game.spike.defuseCheckpoint = false;
   game.spike.playerPlanting = false; game.spike.playerPlantProgress = 0;
   document.getElementById('plantBarWrap').style.display = 'none';
 
@@ -5060,6 +5286,10 @@ function render() {
   
   if (game.spike.planted && isInPlayerVision(game.spike.x, game.spike.y)) {
     const pulse = Math.sin(Date.now() / 100) * 0.3 + 0.7;
+    // ขอบดำรอบนอก — ให้เห็นชัดเจนไม่ว่าพื้นหลังจะสีอะไร
+    ctx.beginPath();
+    ctx.arc(game.spike.x, game.spike.y, 12, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(0,0,0,0.85)'; ctx.lineWidth = 5; ctx.stroke();
     // Yellow planted spike
     ctx.fillStyle = `rgba(255, 200, 0, ${pulse})`;
     ctx.beginPath();
@@ -5663,8 +5893,10 @@ function renderBigMap() {
   // Spike planted
   if (game.spike.planted) {
     const p = Math.sin(Date.now()/150)*0.4+0.6;
-    bigMapCtx.fillStyle = `rgba(255,200,0,${p})`; bigMapCtx.beginPath();
-    bigMapCtx.arc(game.spike.x*sx, game.spike.y*sy, 7, 0, Math.PI*2); bigMapCtx.fill();
+    bigMapCtx.beginPath();
+    bigMapCtx.arc(game.spike.x*sx, game.spike.y*sy, 7, 0, Math.PI*2);
+    bigMapCtx.strokeStyle = 'rgba(0,0,0,0.85)'; bigMapCtx.lineWidth = 3; bigMapCtx.stroke();
+    bigMapCtx.fillStyle = `rgba(255,200,0,${p})`; bigMapCtx.fill();
   }
   
   // Bots — เห็นเฉพาะที่อยู่ในระยะมองเห็นจริง (ไม่งั้นกลายเป็น wallhack ผ่านแผนที่ใหญ่)
@@ -5953,6 +6185,11 @@ function adminPlantSpike() {
   if (!game.spike.planted) {
     game.spike.x = player.x; game.spike.y = player.y;
     game.spike.planted = true; game.spike.plantTime = Date.now(); game.spike.lastBeep = Date.now();
+    const nearSite = sites.reduce((b, s) => {
+      const d = Math.sqrt((player.x-(s.x+s.w/2))**2 + (player.y-(s.y+s.h/2))**2);
+      return d < b.d ? {s, d} : b;
+    }, {s: sites[0], d: Infinity}).s;
+    game.spike.site = nearSite ? nearSite.name : '?';
     player.hasSpike = false;
     addChatMessage('Admin', 'Spike planted', true);
   }
