@@ -642,6 +642,7 @@
         <div style="font-size:10px;color:#888;margin-bottom:6px;letter-spacing:1px;">ABILITIES</div>
         <button class="adminBtn" onclick="adminRefillAbilities()">Refill All Abilities</button>
         <button class="adminBtn" onclick="adminUnlockAllAgents()">Give All Agents (rotate Q)</button>
+        <button class="adminBtn" style="color:#ffd700;border-color:#ffd700;" onclick="adminGiveUlt()">⚡ Give Ultimate (full charge)</button>
       </div>
       <!-- Tab: World -->
       <div id="tab-world" class="adminTabContent" style="display:none;padding:10px;">
@@ -1748,7 +1749,7 @@ function handleNetEvent(ev) {
       selectedAgent.abilities = fresh.abilities;
     }
     bullets = []; smokes = []; walls_ability = []; flashes = []; flashProjectiles = []; damageNumbers = [];
-    cypherTraps = []; reynaOrbs = []; reynaDismissActive = false; jettDashing = false;
+    cypherTraps = []; turrets = []; faultLineMarkers = []; reynaOrbs = []; reynaDismissActive = false; jettDashing = false;
     game.roundEnding = false;
     game.spike.planted = false; game.spike.defuseProgress = 0;
     game.spike.playerDefusing = false; game.spike.playerDefuseProgress = 0; game.spike.defuseCheckpoint = false;
@@ -1785,15 +1786,34 @@ function handleNetEvent(ev) {
     // ออกจาก spectate ถ้ากำลัง spectate อยู่
     if (spectateMode) exitSpectate();
   } else if (ev.type === 'cypherTrapTriggered') {
-    // Visual effect + apply slow to local player if in range
-    smokes.push({x: ev.x, y: ev.y, radius: ev.isSlow ? 70 : 55, life: ev.isSlow ? 300 : 180, maxLife: ev.isSlow ? 300 : 180, slow: true});
-    playSound('ability', ev.x, ev.y);
+    // Visual effect + apply slow/restrain to local player if in range
+    if (!ev.isTripwire) {
+      smokes.push({x: ev.x, y: ev.y, radius: ev.isSlow ? 70 : 55, life: ev.isSlow ? 300 : 180, maxLife: ev.isSlow ? 300 : 180, slow: true});
+    }
+    playSound(ev.isTripwire ? 'headshot' : 'ability', ev.x, ev.y);
     if (player.hp > 0) {
       const d = Math.sqrt((player.x - ev.x)**2 + (player.y - ev.y)**2);
       if (d < 60) {
-        player.slowed = true; player.slowEnd = Date.now() + 3000;
-        showMessage('⚠️ Caught by Cypher trap!', 1500);
+        if (ev.isTripwire) {
+          player.restrained = true; player.restrainedEnd = Date.now() + 2000;
+          showMessage('🪢 CAUGHT IN TRAPWIRE! Restrained!', 1800);
+        } else {
+          player.slowed = true; player.slowEnd = Date.now() + 3000;
+          showMessage('⚠️ Caught by Cypher trap!', 1500);
+        }
       }
+    }
+  } else if (ev.type === 'turretSpawn') {
+    // เจ้าของ turret เป็นคนคำนวณยิงเอง — client อื่นแค่แสดงผล
+    turrets.push({ x: ev.x, y: ev.y, angle: ev.angle, ownerId: ev.ownerId, ownerTeam: ev.ownerTeam,
+      hp: 75, maxHp: 75, life: ev.life, maxLife: ev.life, lastShot: 0, range: 380 });
+  } else if (ev.type === 'faultLineVisual') {
+    faultLineMarkers.push({ x1: ev.x1, y1: ev.y1, x2: ev.x2, y2: ev.y2, life: 20, maxLife: 20 });
+  } else if (ev.type === 'restrain') {
+    if (ev.targetId === MP.myId && player.hp > 0) {
+      player.restrained = true; player.restrainedEnd = Date.now() + (ev.duration || 2000);
+      showMessage('⚡ STUNNED BY FAULT LINE!', 1800);
+      playSound('headshot', player.x, player.y);
     }
   } else if (ev.type === 'chat') {
     addChatMessage(ev.name || 'Player', ev.text || '');
@@ -2225,9 +2245,9 @@ const AGENTS = {
   sage: { name: 'SAGE', icon: '⛓️', color: '#44ccaa', abilities: { Q: { name: 'Slow', icon: '❄️', count: 2, type: 'slow' }, E: { name: 'Wall', icon: '🧊', count: 1, type: 'iceWall' }, C: { name: 'Heal', icon: '💚', count: 1, type: 'healOther' }, X: { name: "Guardian's Grace", icon: '✨', count: 0, type: 'ultCleanseHeal', pointsRequired: 8 } } },
   jett: { name: 'JETT', icon: '🌪️', color: '#88ccff', abilities: { Q: { name: 'Dash', icon: '💨', count: 2, type: 'jettDash', maxDist: 280 }, E: { name: 'Updraft', icon: '🌀', count: 2, type: 'jettDashShort', maxDist: 120 }, C: { name: 'Cloudburst', icon: '🌫️', count: 2, type: 'smoke' }, X: { name: 'Blade Storm', icon: '🔪', count: 0, type: 'ultBladestorm', pointsRequired: 6 } } },
   reyna: { name: 'REYNA', icon: '👁️', color: '#aa44ff', abilities: { Q: { name: 'Dismiss', icon: '💜', count: 2, type: 'reynaDismiss', requiresKill: true }, E: { name: 'Devour', icon: '❤️‍🔥', count: 2, type: 'reynaDevour', requiresKill: true }, C: { name: 'Leer', icon: '👁️', count: 2, type: 'flash' }, X: { name: 'Empress', icon: '👑', count: 0, type: 'ultEmpress', pointsRequired: 6 } } },
-  breach: { name: 'BREACH', icon: '⚡', color: '#ff8833', abilities: { Q: { name: 'Flash', icon: '⚡', count: 2, type: 'flash' }, E: { name: 'Slow', icon: '🌊', count: 2, type: 'slow' }, C: { name: 'Smoke', icon: '💥', count: 1, type: 'smoke' }, X: { name: 'Rolling Thunder', icon: '💥', count: 0, type: 'ultShockwave', radius: 220, maxDist: 900, pointsRequired: 7 } } },
-  killjoy: { name: 'KILLJOY', icon: '🤖', color: '#ffdd44', abilities: { Q: { name: 'Nanoswarm', icon: '🔴', count: 3, type: 'slowTrap' }, E: { name: 'Smoke', icon: '🟡', count: 2, type: 'smoke' }, C: { name: 'Wall', icon: '🔒', count: 1, type: 'iceWall' }, X: { name: 'Lockdown', icon: '🔒', count: 0, type: 'ultLockdown', radius: 260, maxDist: 900, pointsRequired: 8 } } },
-  cypher: { name: 'CYPHER', icon: '🕵️', color: '#ccccaa', abilities: { Q: { name: 'Flash', icon: '🔦', count: 2, type: 'flash' }, E: { name: 'Cage', icon: '🕸️', count: 2, type: 'smoke' }, C: { name: 'Slow Trap', icon: '🪤', count: 2, type: 'cypherTrap' }, X: { name: 'Neural Theft', icon: '🧠', count: 0, type: 'ultReveal', pointsRequired: 6 } } },
+  breach: { name: 'BREACH', icon: '⚡', color: '#ff8833', abilities: { Q: { name: 'Flash', icon: '⚡', count: 2, type: 'flash' }, E: { name: 'Fault Line', icon: '⚡', count: 2, type: 'faultLine', length: 500, halfWidth: 55 }, C: { name: 'Smoke', icon: '💥', count: 1, type: 'smoke' }, X: { name: 'Rolling Thunder', icon: '💥', count: 0, type: 'ultShockwave', radius: 220, maxDist: 900, pointsRequired: 7 } } },
+  killjoy: { name: 'KILLJOY', icon: '🤖', color: '#ffdd44', abilities: { Q: { name: 'Nanoswarm', icon: '🔴', count: 3, type: 'slowTrap' }, E: { name: 'Smoke', icon: '🟡', count: 2, type: 'smoke' }, C: { name: 'Turret', icon: '🔫', count: 1, type: 'turret' }, X: { name: 'Lockdown', icon: '🔒', count: 0, type: 'ultLockdown', radius: 260, maxDist: 900, pointsRequired: 8 } } },
+  cypher: { name: 'CYPHER', icon: '🕵️', color: '#ccccaa', abilities: { Q: { name: 'Flash', icon: '🔦', count: 2, type: 'flash' }, E: { name: 'Trapwire', icon: '🪢', count: 2, type: 'tripwireTrap' }, C: { name: 'Slow Trap', icon: '🪤', count: 2, type: 'cypherTrap' }, X: { name: 'Neural Theft', icon: '🧠', count: 0, type: 'ultReveal', pointsRequired: 6 } } },
   brimstone: { name: 'BRIMSTONE', icon: '🔫', color: '#ff5533', abilities: { Q: { name: 'Stim', icon: '💉', count: 1, type: 'heal' }, E: { name: 'Smoke', icon: '🌫️', count: 3, type: 'smoke' }, C: { name: 'Wall', icon: '🔥', count: 1, type: 'fireWall' }, X: { name: 'Orbital Strike', icon: '☄️', count: 0, type: 'ultOrbital', radius: 130, maxDist: 1200, pointsRequired: 7 } } }
 };
 
@@ -2251,7 +2271,7 @@ const player = {
   hp: 100, maxHp: 100, armor: 0, maxArmor: 50, armorTier: 0, // 0=none 1=light 2=heavy
   ammo: 12, maxAmmo: 12, reloading: false, reloadTime: 0,
   hasSpike: true, weapon: 'classic', lastShot: 0, money: 800,
-  hasFlash: false, flashTime: 0, slowed: false, slowEnd: 0,
+  hasFlash: false, flashTime: 0, slowed: false, slowEnd: 0, restrained: false, restrainedEnd: 0,
   color: '#4a9eff', ownedWeapons: ['classic'], lastFootstep: 0,
   currentSpread: 0, recoilOffsetY: 0, shotsInBurst: 0,
   // Zoom (ADS - aim down sights)
@@ -2519,6 +2539,8 @@ const DEFENDER_SPAWN_B = { x:1350, y:930 };
 
 let bullets = [], enemies = [], smokes = [], walls_ability = [], flashes = [], flashProjectiles = [];
 let cypherTraps = [];  // {x, y, triggered:false, life}
+let turrets = [];      // Killjoy: {x, y, angle, ownerId, ownerTeam, hp, maxHp, life, lastShot, range}
+let faultLineMarkers = []; // Breach: {x1,y1,x2,y2,life,maxLife} — visual only, ไม่กันกระสุน/ทาง
 let reynaOrbs = [];    // {x, y, life} — soul orbs after kill, 3s window
 let hurtFlashAlpha = 0; // 0-1, vignette เมื่อโดนยิง
 
@@ -3210,6 +3232,48 @@ function ultAoeDamage(cx, cy, radius, damage) {
   smokes.push({ x: cx, y: cy, radius, life: 500, maxLife: 500, slow: true });
   if (MP.mode !== 'solo') MP.broadcastEvent({ type: 'smokeSpawn', x: cx, y: cy, radius, life: 500, slow: true });
 }
+// จุด (px,py) อยู่ในสี่เหลี่ยมที่หันตามมุม angle จากจุด (ox,oy) หรือไม่ — ใช้เช็คระยะ Fault Line (ทะลุกำแพงได้)
+function pointInLine(px, py, ox, oy, angle, length, halfWidth) {
+  const dx = px - ox, dy = py - oy;
+  const cos = Math.cos(-angle), sin = Math.sin(-angle);
+  const localX = dx * cos - dy * sin;
+  const localY = dx * sin + dy * cos;
+  return localX >= 0 && localX <= length && Math.abs(localY) <= halfWidth;
+}
+// Breach Fault Line — เส้นดาเมจ+สตัน ทะลุกำแพงได้ (ไม่เช็ค wall collision)
+function faultLineStrike(ox, oy, angle, length, halfWidth, damage) {
+  const myTeam = getMyTeam();
+  enemies.forEach(e => {
+    if (e.hp <= 0 || e.team === myTeam) return;
+    if (!pointInLine(e.x, e.y, ox, oy, angle, length, halfWidth)) return;
+    e.restrained = true; e.restrainedEnd = Date.now() + 2500;
+    if (MP.mode === 'client') {
+      MP.sendToHost({ type: 'botDamage', botId: e.botId || e.name, damage });
+    } else {
+      e.hp = Math.max(0, e.hp - damage);
+      if (e.hp <= 0) {
+        player.money += 200;
+        addKillfeed('You', e.name, selectedAgent.name, false, MP.myId || 'you', e.botId || e.name);
+        onPlayerGotKill();
+      }
+    }
+  });
+  if (MP.mode !== 'solo') {
+    Object.entries(MP.remotePlayers || {}).forEach(([pid, rp]) => {
+      if (!rp || !rp.alive || rp.hp <= 0 || rp.team === myTeam) return;
+      if (!pointInLine(rp.x, rp.y, ox, oy, angle, length, halfWidth)) return;
+      rp.hp = Math.max(0, rp.hp - damage);
+      MP.broadcastEvent({ type: 'damage', targetId: pid, damage, isHs: false, attacker: MP.myNickname, attackerId: MP.myId, weapon: selectedAgent.name });
+      MP.broadcastEvent({ type: 'restrain', targetId: pid, duration: 2500 });
+      if (rp.hp <= 0) {
+        rp.alive = false;
+        player.money += 200;
+        addKillfeed(MP.myNickname, rp.nickname, selectedAgent.name, false, MP.myId, pid);
+        onPlayerGotKill();
+      }
+    });
+  }
+}
 function useAbility(key) {
   if (!selectedAgent) return;
   if (targetingAbility === key) {
@@ -3277,12 +3341,29 @@ function useAbility(key) {
     updateAbilityHUD(); return;
   }
 
-  // Cypher trap / slowTrap: place on ground, activates when enemy walks near
-  if (ab.type === 'cypherTrap' || ab.type === 'slowTrap') {
-    cypherTraps.push({ x: player.x, y: player.y, triggered: false, life: 1800, maxLife: 1800, active: true, isSlow: ab.type === 'slowTrap', ownerTeam: getMyTeam() });
+  // Cypher trap / slowTrap / tripwireTrap: place on ground, activates when enemy walks near
+  if (ab.type === 'cypherTrap' || ab.type === 'slowTrap' || ab.type === 'tripwireTrap') {
+    cypherTraps.push({ x: player.x, y: player.y, triggered: false, life: 1800, maxLife: 1800, active: true,
+      isSlow: ab.type === 'slowTrap', isTripwire: ab.type === 'tripwireTrap', ownerTeam: getMyTeam() });
     ab.count--;
-    showMessage(ab.type === 'slowTrap' ? 'Slow trap placed!' : 'Trap placed!', 1200);
+    showMessage(ab.type === 'slowTrap' ? 'Slow trap placed!' : (ab.type === 'tripwireTrap' ? 'Trapwire placed!' : 'Trap placed!'), 1200);
     playSound('ability', player.x, player.y);
+    updateAbilityHUD(); return;
+  }
+
+  // Killjoy turret: วางแล้วยิงเองอัตโนมัติใส่ศัตรูที่เข้าระยะ
+  if (ab.type === 'turret') {
+    const tx = player.x + Math.cos(player.angle) * 40, ty = player.y + Math.sin(player.angle) * 40;
+    const myId = MP.myId || 'you';
+    const turretObj = { x: tx, y: ty, angle: player.angle, ownerId: myId, ownerTeam: getMyTeam(),
+      hp: 75, maxHp: 75, life: 3600, maxLife: 3600, lastShot: 0, range: 380 };
+    turrets.push(turretObj);
+    ab.count--;
+    showMessage('🔫 Turret deployed!', 1200);
+    playSound('ability', player.x, player.y);
+    if (MP.mode !== 'solo') {
+      MP.broadcastEvent({ type: 'turretSpawn', x: tx, y: ty, angle: player.angle, ownerId: myId, ownerTeam: getMyTeam(), life: 3600 });
+    }
     updateAbilityHUD(); return;
   }
 
@@ -3405,6 +3486,19 @@ function executeAbility(key, targetX, targetY) {
     if (MP.mode !== 'solo') {
       MP.broadcastEvent({ type: 'smokeSpawn', x: clampedTX, y: clampedTY, radius: 70, life: 400, slow: true });
     }
+    consumeAbility(key, ab);
+  } else if (ab.type === 'faultLine') {
+    // Breach: เส้นดาเมจ+สตัน ยิงทะลุกำแพงได้ ไม่ต้องเห็นเป้าหมาย
+    const flAngle = Math.atan2(clampedTY - player.y, clampedTX - player.x);
+    const flLen = ab.length || 500, flHalfW = ab.halfWidth || 55;
+    faultLineStrike(player.x, player.y, flAngle, flLen, flHalfW, 45);
+    const flEndX = player.x + Math.cos(flAngle) * flLen, flEndY = player.y + Math.sin(flAngle) * flLen;
+    faultLineMarkers.push({ x1: player.x, y1: player.y, x2: flEndX, y2: flEndY, life: 20, maxLife: 20 });
+    if (MP.mode !== 'solo') {
+      MP.broadcastEvent({ type: 'faultLineVisual', x1: player.x, y1: player.y, x2: flEndX, y2: flEndY });
+    }
+    showMessage('⚡ FAULT LINE!', 1200);
+    playSound('kill', player.x, player.y);
     consumeAbility(key, ab);
   } else if (ab.type === 'ultShockwave') {
     // Breach ult: Rolling Thunder — ระเบิดพื้นที่กว้าง โดนแล้วช้าลง+โดนดาเมจ
@@ -3593,6 +3687,18 @@ function triggerCypherTrap(trap, tx, ty) {
   if (trap.isSlow) {
     smokes.push({x: trap.x, y: trap.y, radius: 70, life: 300, maxLife: 300, slow: true});
     trap.active = false;
+  } else if (trap.isTripwire) {
+    // Trapwire: ตรึงไม่ให้ขยับ + ยิงไม่ได้ชั่วคราว (ไม่ใช่แค่ช้าลงเหมือน slow trap) — ไม่มีวงควันให้เห็น เป็นลวดที่มองไม่เห็น
+    playSound('headshot', trap.x, trap.y); // เสียงเตือนดังชัดกว่า ability ปกติ
+    enemies.forEach(e => {
+      if (e.hp > 0 && Math.sqrt((e.x-trap.x)**2 + (e.y-trap.y)**2) < 55) {
+        e.restrained = true; e.restrainedEnd = Date.now() + 2000;
+      }
+    });
+    if (MP.mode !== 'solo') {
+      MP.broadcastEvent({ type: 'cypherTrapTriggered', x: trap.x, y: trap.y, isSlow: false, isTripwire: true });
+    }
+    trap.active = false;
   } else {
     // Slow zone + damage pulse
     smokes.push({x: trap.x, y: trap.y, radius: 55, life: 180, maxLife: 180, slow: true});
@@ -3724,6 +3830,7 @@ function shoot(shooter, targetX, targetY, isPlayer) {
     const empressActive = player.empressEnd && now < player.empressEnd;
     const effFireRate = empressActive ? w.fireRate * 0.65 : w.fireRate;
     if (player.reloading || player.ammo <= 0) return;
+    if (player.restrained && now < player.restrainedEnd) return;
     if (now - player.lastShot < effFireRate) return;
     if (now - player.lastShot > effFireRate * 1.5) { player.currentSpread = 0; player.shotsInBurst = 0; }
     player.lastShot = now; player.ammo--; player.shotsInBurst++;
@@ -3842,6 +3949,8 @@ function update() {
   if (isWalking) speedMult *= 0.5;
   if (player.slowed && now < player.slowEnd) speedMult *= 0.4;
   else player.slowed = false;
+  if (player.restrained && now < player.restrainedEnd) speedMult = 0;
+  else player.restrained = false;
   if (smokes.some(s => s.slow && Math.sqrt((player.x-s.x)**2 + (player.y-s.y)**2) < s.radius)) speedMult *= 0.4;
   // Reyna dismiss: faster and invulnerable
   if (isGhostMode) speedMult *= 1.8;
@@ -3862,6 +3971,7 @@ function update() {
 
   // Update Reyna orbs (3s window, decay)
   reynaOrbs = reynaOrbs.filter(orb => { orb.life--; return orb.life > 0; });
+  faultLineMarkers = faultLineMarkers.filter(m => { m.life--; return m.life > 0; });
 
   // Update Cypher traps / slow traps
   const myTeamTrap = getMyTeam();
@@ -3899,13 +4009,74 @@ function update() {
       if (Math.sqrt((player.x-trap.x)**2 + (player.y-trap.y)**2) < TRIGGER_R) {
         triggerCypherTrap(trap, player.x, player.y);
         hurtFlash(0.5);
-        player.slowed = true; player.slowEnd = Date.now() + 3000;
-        showMessage(trap.isSlow ? '⚠️ Slowed by trap!' : '⚠️ Caught by trap!', 1500);
+        if (trap.isTripwire) {
+          player.restrained = true; player.restrainedEnd = Date.now() + 2000;
+          showMessage('🪢 CAUGHT IN TRAPWIRE! Restrained!', 1800);
+        } else {
+          player.slowed = true; player.slowEnd = Date.now() + 3000;
+          showMessage(trap.isSlow ? '⚠️ Slowed by trap!' : '⚠️ Caught by trap!', 1500);
+        }
       }
     }
     
     return trap.active;
   });
+
+  // Update Killjoy turrets — เจ้าของแต่ละตัวเป็นคนตัดสินใจยิงเอง (กันขัดแย้งกันระหว่าง client)
+  const myIdForTurret = MP.myId || 'you';
+  turrets = turrets.filter(t => {
+    t.life--;
+    if (t.life <= 0 || t.hp <= 0) return false;
+    if (t.ownerId !== myIdForTurret) return true; // ของคนอื่น — โชว์ผลอย่างเดียว เจ้าของเป็นคนยิง
+    if (now - t.lastShot < 350) return true;
+    let target = null, bestD = t.range;
+    enemies.forEach(e => {
+      if (e.hp <= 0 || e.team === t.ownerTeam) return;
+      const d = Math.sqrt((e.x - t.x) ** 2 + (e.y - t.y) ** 2);
+      if (d < bestD) { bestD = d; target = { x: e.x, y: e.y, kind: 'bot', ref: e }; }
+    });
+    if (MP.mode !== 'solo') {
+      Object.entries(MP.remotePlayers || {}).forEach(([pid, rp]) => {
+        if (!rp || !rp.alive || rp.hp <= 0 || rp.team === t.ownerTeam) return;
+        const d = Math.sqrt((rp.x - t.x) ** 2 + (rp.y - t.y) ** 2);
+        if (d < bestD) { bestD = d; target = { x: rp.x, y: rp.y, kind: 'remote', id: pid }; }
+      });
+    }
+    if (target) {
+      t.lastShot = now;
+      t.angle = Math.atan2(target.y - t.y, target.x - t.x);
+      const dmg = 18;
+      if (target.kind === 'bot') {
+        if (MP.mode === 'client') {
+          MP.sendToHost({ type: 'botDamage', botId: target.ref.botId || target.ref.name, damage: dmg });
+        } else {
+          target.ref.hp = Math.max(0, target.ref.hp - dmg);
+          if (target.ref.hp <= 0) {
+            player.money += 200;
+            addKillfeed('Turret', target.ref.name, 'Turret', false, t.ownerId, target.ref.botId || target.ref.name);
+            playSound('kill');
+            onPlayerGotKill();
+          }
+        }
+      } else {
+        const rp = MP.remotePlayers[target.id];
+        if (rp) {
+          rp.hp = Math.max(0, rp.hp - dmg);
+          MP.broadcastEvent({ type: 'damage', targetId: target.id, damage: dmg, isHs: false, attacker: 'Turret', attackerId: t.ownerId, weapon: 'Turret' });
+          if (rp.hp <= 0) {
+            rp.alive = false;
+            player.money += 200;
+            addKillfeed('Turret', rp.nickname, 'Turret', false, t.ownerId, target.id);
+            playSound('kill');
+            onPlayerGotKill();
+          }
+        }
+      }
+      playSound('shoot', t.x, t.y, { pitch: 2400 });
+    }
+    return true;
+  });
+
   const speed = player.speed * speedMult;
   
   let dx = 0, dy = 0;
@@ -4256,9 +4427,11 @@ function update() {
       if (enemy.hp <= 0) return;
       if (enemy.flashed && now > enemy.flashEnd) enemy.flashed = false;
       if (enemy.slowed && now > enemy.slowEnd) enemy.slowed = false;
+      if (enemy.restrained && now > enemy.restrainedEnd) enemy.restrained = false;
       if (smokes.some(s => s.slow && Math.sqrt((enemy.x-s.x)**2+(enemy.y-s.y)**2) < s.radius)) { enemy.slowed = true; enemy.slowEnd = now+200; }
       let enemySpeed = enemy.speed;
       if (enemy.slowed) enemySpeed *= 0.4;
+      if (enemy.restrained) enemySpeed = 0;
 
       // Init extended AI state
       if (!enemy.ai) enemy.ai = {
@@ -4705,10 +4878,18 @@ function update() {
   // === Round end check (host & solo) ===
   if (MP.mode !== 'client' && !inBuyPhase && !game.roundEnding) {
     if (MP.mode === 'solo') {
-      // Solo: ฆ่าศัตรูหมด + ไม่มี spike planted = win
-      // ถ้า spike planted รอ detonation หรือ defuse
-      if (aliveEnemies === 0 && !game.spike.planted && player.hp > 0) winRound();
-      // ถ้า spike planted + defender ตายหมด → รอ detonation (จะ winRound เมื่อ detonated)
+      const myTeam = getMyTeam();
+      if (aliveEnemies === 0 && !game.spike.planted && player.hp > 0) {
+        // ฆ่าศัตรูหมด + ไม่มี spike planted → ชนะทันที (ทุกทีม)
+        winRound();
+      } else if (aliveEnemies === 0 && game.spike.planted && myTeam === 'attacker' && player.hp > 0) {
+        // เราเป็นฝ่ายบุก + ฝ่ายป้องกันตายหมด + วางระเบิดแล้ว → ชนะทันที ไม่ต้องรอระเบิด
+        game.spike.planted = false;
+        showMessage('💣 All defenders down! Attackers win!', 3000);
+        playSound('win');
+        winRound();
+      }
+      // ถ้าเราเป็นฝ่ายป้องกันแล้วฝ่ายบุกตายหมดแต่ spike planted → ยังต้องกู้หรือรอระเบิด (ไม่จบทันที)
     } else if (MP.mode === 'host') {
       const myTeam = (MP.myId && MP.lobby.players[MP.myId]) ? MP.lobby.players[MP.myId].team : 'attacker';
       // Count alive players per team (bots + humans = remotePlayers + myself + bots)
@@ -4989,7 +5170,7 @@ function nextRound() {
   player.hasFlash = false; player.slowed = false;
   player.zoomFactor = 1.0; player.zoomTargetFactor = 1.0; player.zooming = false;
   bullets = []; smokes = []; walls_ability = []; flashes = []; flashProjectiles = []; damageNumbers = [];
-  cypherTraps = []; reynaOrbs = []; reynaDismissActive = false; jettDashing = false;
+  cypherTraps = []; turrets = []; faultLineMarkers = []; reynaOrbs = []; reynaDismissActive = false; jettDashing = false;
   roundTimerActive = false; roundKillCount = 0; clutchAnnounced = false;
   // Reset hp/alive ของ remote players ทุกคนเพื่อรอบใหม่
   Object.values(MP.remotePlayers || {}).forEach(rp => { rp.hp = 100; rp.alive = true; rp.armor = 0; });
@@ -5472,7 +5653,32 @@ function render() {
     ctx.beginPath(); ctx.moveTo(trap.x-5, trap.y-5); ctx.lineTo(trap.x+5, trap.y+5); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(trap.x+5, trap.y-5); ctx.lineTo(trap.x-5, trap.y+5); ctx.stroke();
   });
-  
+
+  // Killjoy turrets
+  turrets.forEach(t => {
+    if (!isInPlayerVision(t.x, t.y)) return;
+    ctx.save();
+    ctx.translate(t.x, t.y);
+    ctx.rotate(t.angle);
+    ctx.fillStyle = '#333'; ctx.strokeStyle = '#ffdd44'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(0, 0, 10, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#ffdd44';
+    ctx.fillRect(0, -3, 16, 6); // ลำกล้อง
+    ctx.restore();
+    // HP bar
+    const hpPct = Math.max(0, t.hp / t.maxHp);
+    ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(t.x-14, t.y-22, 28, 4);
+    ctx.fillStyle = hpPct > 0.4 ? '#4ade80' : '#ff4655'; ctx.fillRect(t.x-14, t.y-22, 28*hpPct, 4);
+  });
+
+  // Breach Fault Line — เส้นทะลุกำแพง เห็นได้ทุกคนแม้อยู่หลังกำแพง (คลื่นแผ่นดินไหว)
+  faultLineMarkers.forEach(m => {
+    const a = m.life / m.maxLife;
+    ctx.strokeStyle = `rgba(255,136,51,${a})`;
+    ctx.lineWidth = 8 * a + 1;
+    ctx.beginPath(); ctx.moveTo(m.x1, m.y1); ctx.lineTo(m.x2, m.y2); ctx.stroke();
+  });
+
   ctx.restore();
   renderFogOfWar();
   
@@ -6085,6 +6291,12 @@ function adminRefillAbilities() {
   selectedAgent.abilities = fresh.abilities;
   updateAbilityHUD();
   addChatMessage('Admin', 'Refilled abilities', true);
+}
+function adminGiveUlt() {
+  if (!selectedAgent || !selectedAgent.abilities.X) return;
+  player.ultPoints = selectedAgent.abilities.X.pointsRequired || 7;
+  updateAbilityHUD();
+  addChatMessage('Admin', 'Ultimate ready — press X', true);
 }
 function adminEndBuyPhase() {
   if (inBuyPhase) {
